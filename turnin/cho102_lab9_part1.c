@@ -1,7 +1,7 @@
 /*	Author: lab
  *  Partner(s) Name: Cindy Ho
  *	Lab Section:
- *	Assignment: Lab #9  Exercise #2
+ *	Assignment: Lab #9  Exercise #1
  *	Exercise Description: [optional - include for your own benefit]
  *
  *	I acknowledge all content contained herein, excluding template or example
@@ -37,7 +37,7 @@ void PWM_off() {
 }
 
 enum States{Start, Init, C_Press, D_Press, E_Press}state;
-unsigned char counter = 0;
+
 void Tick() {
 	switch(state) {
 		case Start:
@@ -90,13 +90,13 @@ void Tick() {
 		case Init:
 			set_PWM(0);
 			break;
-		case C4:
+		case C_Press:
 			set_PWM(261.63);
 			break;
-		case D4:
+		case D_Press:
 			set_PWM(293.66);
 			break;
-		case E4:
+		case E_Press:
 			set_PWM(329.63);
 			break;
 		default:
