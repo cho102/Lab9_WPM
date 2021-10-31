@@ -107,7 +107,6 @@ void Tick() {
 			else { state = On; }
 			break;
 		case Increment:
-			if (
 			state = Play;
 			break;
 		case Decrement:
