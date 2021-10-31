@@ -107,9 +107,15 @@ void Tick() {
 			else { state = On; }
 			break;
 		case Increment:
+			if (counter < 8) {
+				++counter;
+			}
 			state = Play;
 			break;
 		case Decrement:
+			if (counter > 1) {
+				++counter;
+			}
 			state = Play;
 			break;
 		case Play:
