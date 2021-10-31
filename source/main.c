@@ -82,7 +82,7 @@ unsigned char power = 0;
 void Tick() {
 	switch(state) {
 		case Start:
-			state = Off;
+			state = Init;
 			set_PWM(0);
 			break;
 		case Init:
@@ -91,12 +91,12 @@ void Tick() {
 				state = On; 
 			}
 			else { 
-				state = Off; 
+				state = Init; 
 			}
 			break;
 		case On:
  			if ((~PINA & 0x07) == 0x01) { 
-				state = Off; 
+				state = Init; 
 			}
 			else if ((~PINA & 0x07) == 0x02) { 
 				state = Increment; 
@@ -123,17 +123,17 @@ void Tick() {
 	switch(state) {
 		case Start:
 			break;
-		case Off:
+		case Init:
 			power = 0;
 			set_PWM(0);
 			counter = 0;
 			break;
 		case On:
-			OnFlag = 1;
+			power = 1;
 			counter = 1;
 			set_PWM(261.63);
 			break;
-		case Up:
+		case Increment:
 			if (counter == 1) {
 				set_PWM(261.63);
 			} 
@@ -159,7 +159,7 @@ void Tick() {
 				set_PWM(523.25);
 			}
 			break;
-		case Down:
+		case Decrement:
 			if (counter == 1) {
 				set_PWM(261.63);
 			} 
