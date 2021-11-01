@@ -86,6 +86,7 @@ void Tick() {
 	switch(state) {
 		case Start:
 			state = Init;
+			set_PWM(0);
 			break;
 		case Init:
 			if ((~PINA & 0x01) == 0x01) { state = On; }
@@ -96,12 +97,11 @@ void Tick() {
 			else { state = On; }
 			break;
 		case Wait:
-			if ((~PINA & 0x01) == 0x00) { state = Init; }
+			if ((~PINA & 0x01) == 0x00) { state = Off; }
 			else { state = Wait; }
 	}
 	switch(state) {
 		case Start:
-			set_PWM(0);
 			break;
 		case Init:
 			counter = 0;
@@ -112,11 +112,11 @@ void Tick() {
 				--tempCount[counter];
 				set_PWM(seq[counter]);
 				if(tempCount[counter] == 0) {
-					++counter;
 					++j;
+					++counter;
 				}
 			}
-			else {set_PWM(0); ++j; }
+			else { set_PWM(0); ++j; }
 			break;
 		case Wait:
 			set_PWM(0);
