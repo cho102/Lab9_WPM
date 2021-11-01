@@ -74,7 +74,7 @@ void TimerSet(unsigned long M) {
 	_avr_timer_cntcurr = _avr_timer_M;
 }
 
-enum States{Start, Init, On, Increment, Decrement, Play}state;
+enum States{Start, Init, On, Increment, Decrement, Wait}state;
 
 double counter = 0;
 unsigned char power = 0;
@@ -110,20 +110,20 @@ void Tick() {
 			//if (counter < 8) {
 			//	++counter;
 			//}
-			state = Play;
+			state = Wait;
 			break;
 		case Decrement:
 			//if (counter > 1) {
 			//	++counter;
 			//}
-			state = Play;
+			state = Wait;
 			break;
-		case Play:
+		case Wait:
 			if ((~PINA & 0x07) == 0x00) {
 				if (power) { state = On; }
 				else { state = Init; }
 			}
-			else { state = Play; }
+			else { state = Wait; }
 			break;
 	}
 	switch(state) {
@@ -140,26 +140,58 @@ void Tick() {
 			set_PWM(counter);
 			break;
 		case Increment:
-			if (counter == 261.63) { counter = 293.66; }
-			else if (counter == 293.66) { counter = 329.63; }
-			else if (counter == 329.63) { counter = 349.23; }
-			else if (counter == 349.23) { counter = 392.00; }
-			else if (counter == 392.00) { counter = 440.00; }
-			else if (counter == 440.00) { counter = 493.88; }
-			else if (counter == 493.88) { counter = 523.25; }
-			if (power) { set_PWM(counter); }
+			if (counter == 261.63) { 
+				counter = 293.66; 
+			}
+			else if (counter == 293.66) { 
+				counter = 329.63; 
+			}
+			else if (counter == 329.63) { 
+				counter = 349.23; 
+			}
+			else if (counter == 349.23) { 
+				counter = 392.00; 
+			}
+			else if (counter == 392.00) { 
+				counter = 440.00; 
+			}
+			else if (counter == 440.00) { 
+				counter = 493.88; 
+			}
+			else if (counter == 493.88) { 
+				counter = 523.25; 
+			}
+			//if (power) { 
+				set_PWM(counter);
+			//}
 			break;
 		case Decrement:
-			if (counter == 523.25) { counter = 493.88; }
-			else if (counter == 493.88) { counter = 440.00; }
-			else if (counter == 440.00) { counter = 392.00; }
-			else if (counter == 392.00) { counter = 349.23; }
-			else if (counter == 349.23) { counter = 329.63; }
-			else if (counter == 329.63) { counter = 293.66; }
-			else if (counter == 293.66) { counter = 261.63; }
-			if (power) { set_PWM(counter); }
+			if (counter == 523.25) { 
+				counter = 493.88;
+			}
+			else if (counter == 493.88) { 
+				counter = 440.00; 
+			}
+			else if (counter == 440.00) { 
+				counter = 392.00; 
+			}
+			else if (counter == 392.00) { 
+				counter = 349.23; 
+			}
+			else if (counter == 349.23) { 
+				counter = 329.63; 
+			}
+			else if (counter == 329.63) { 
+				counter = 293.66; 
+			}
+			else if (counter == 293.66) { 
+				counter = 261.63; 
+			}
+			//if (power) { 
+				set_PWM(counter); 
+			//}
 			break;
-		case Play:
+		case Wait:
 			break;
 	}
 }
@@ -169,7 +201,7 @@ int main(void) {
 	DDRB = 0xFF; PORTB = 0x00;
 	state = Start;
 	PWM_on();
-	TimerSet(50);
+	TimerSet(100);
 	TimerOn();
 	while (1) {
 		Tick();
