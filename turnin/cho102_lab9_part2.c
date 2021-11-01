@@ -120,12 +120,11 @@ void Tick() {
 			break;
 		case Wait:
 			if ((~PINA & 0x07) == 0x00) {
-				//if (power) { 
-					state = On; 
-				//}
-				//else { state = Init; }
+				state = On; 
 			}
-			else { state = Wait; }
+			else { 
+				state = Wait; 
+			}
 			break;
 	}
 	switch(state) {
