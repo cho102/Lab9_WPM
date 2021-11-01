@@ -77,7 +77,7 @@ void TimerSet(unsigned long M) {
 enum States{Start, Init, On, Wait}state;
 double seq[18] = {261.63,261.63, 293.66, 329.63, 329.63, 293.66, 261.63, 261.63, 329.63, 329.63, 261.63, 261.63, 293.66, 261.63, 329.63, 293.66, 293.66, 261.63};
 char beatCount[18] = {3, 3, 6, 3, 3, 6, 3, 3, 3, 3, 3, 3, 6, 3, 3, 6, 6, 3};
-int tempCount[18] = = {3, 3, 6, 3, 3, 6, 3, 3, 3, 3, 3, 3, 6, 3, 3, 6, 6, 3};
+int tempCount[18] = {3, 3, 6, 3, 3, 6, 3, 3, 3, 3, 3, 3, 6, 3, 3, 6, 6, 3};
 unsigned char counter = 0;
 unsigned char j;
 
@@ -112,7 +112,7 @@ void Tick() {
 				set_PWM(seq[counter]);
 				if(tempCount[counter] == 0) {
 					++counter;
-					++i;
+					++j;
 				}
 			}
 			else { set_PWM(0); ++j; }
