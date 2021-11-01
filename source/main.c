@@ -97,7 +97,7 @@ void Tick() {
 			else { state = On; }
 			break;
 		case Wait:
-			if ((~PINA & 0x01) == 0x00) { state = Off; }
+			if ((~PINA & 0x01) == 0x00) { state = Init; }
 			else { state = Wait; }
 	}
 	switch(state) {
