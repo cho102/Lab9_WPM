@@ -74,127 +74,61 @@ void TimerSet(unsigned long M) {
 	_avr_timer_cntcurr = _avr_timer_M;
 }
 
-enum States{Start, Init, On, Increment, Decrement, Wait}state;
-
+enum States{Start, Off, On, WaitRelease}state;
+double songArr[18] = {261.63,261.63, 293.66, 329.63, 329.63, 293.66, 261.63, 261.63, 329.63, 329.63, 261.63, 261.63, 293.66, 261.63, 329.63, 293.66, 293.66, 261.63};
+char beatCount[18] = {3, 3, 6, 3, 3, 6, 3, 3, 3, 3, 3, 3, 6, 3, 3, 6, 6, 3};
+int tempCount[18];
 double counter = 0;
 unsigned char power = 0;
+
+unsigned char i = 0;
+unsigned char j = 0;
 
 void Tick() {
 	switch(state) {
 		case Start:
-			state = Init;
+			state = Off;
 			set_PWM(0);
 			break;
-		case Init:
-			if ((~PINA & 0x07) == 0x01) 
-			{ 
-				state = On; 
+		case Off:
+			for(unsigned char k = 0; k < 26; ++k) {
+				tempCount[k] = beatCount[k];
 			}
-			else { 
-				state = Init; 
-			}
+			if ((~PINA & 0x01) == 0x01) { state = On; }
+			else { state = Off; }
 			break;
 		case On:
- 			if ((~PINA & 0x07) == 0x01) { 
-				state = Init; 
-			}
-			else if ((~PINA & 0x07) == 0x02) { 
-				state = Increment; 
-			}
-			else if ((~PINA & 0x07) == 0x04) { 
-				state = Decrement; 
-			}
+			if (i >= 26) { state = WaitRelease; }
 			else { state = On; }
 			break;
-		case Increment:
-			//if (counter < 8) {
-			//	++counter;
-			//}
-			state = Wait;
-			break;
-		case Decrement:
-			//if (counter > 1) {
-			//	++counter;
-			//}
-			state = Wait;
-			break;
-		case Wait:
-			if ((~PINA & 0x07) == 0x00) {
-				if (power) { state = On; }
-				else { state = Init; }
-			}
-			else { state = Wait; }
-			break;
+		case WaitRelease:
+			if ((~PINA & 0x01) == 0x00) { state = Off; }
+			else { state = WaitRelease; }
 	}
 	switch(state) {
 		case Start:
 			break;
-		case Init:
-			power = 0;
-			set_PWM(0);
-			counter = 261.63;
+		case Off:
+			i = 0;
+			j = 0;
 			break;
 		case On:
-			power = 1;
-	//		counter = 1;
-			set_PWM(counter);
+			if (j % 2 == 0) {
+				--tempCount[i];
+				set_PWM(songArr[i]);
+				if(tempCount[i] == 0) {
+					++j;
+					++i;
+				}
+			}
+			else { set_PWM(0); ++j; }
 			break;
-		case Increment:
-			if (counter == 261.63) { 
-				counter = 293.66; 
-			}
-			else if (counter == 293.66) { 
-				counter = 329.63; 
-			}
-			else if (counter == 329.63) { 
-				counter = 349.23; 
-			}
-			else if (counter == 349.23) { 
-				counter = 392.00; 
-			}
-			else if (counter == 392.00) { 
-				counter = 440.00; 
-			}
-			else if (counter == 440.00) { 
-				counter = 493.88; 
-			}
-			else if (counter == 493.88) { 
-				counter = 523.25; 
-			}
-			//if (power) { 
-				set_PWM(counter);
-			//}
-			break;
-		case Decrement:
-			if (counter == 523.25) { 
-				counter = 493.88;
-			}
-			else if (counter == 493.88) { 
-				counter = 440.00; 
-			}
-			else if (counter == 440.00) { 
-				counter = 392.00; 
-			}
-			else if (counter == 392.00) { 
-				counter = 349.23; 
-			}
-			else if (counter == 349.23) { 
-				counter = 329.63; 
-			}
-			else if (counter == 329.63) { 
-				counter = 293.66; 
-			}
-			else if (counter == 293.66) { 
-				counter = 261.63; 
-			}
-			//if (power) { 
-				set_PWM(counter); 
-			//}
-			break;
-		case Wait:
+		case WaitRelease:
+			set_PWM(0);
 			break;
 	}
 }
+
 
 int main(void) {
 	DDRA = 0x00; PORTA = 0xFF;
