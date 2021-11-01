@@ -92,7 +92,7 @@ void Tick() {
 			else { state = Init; }
 			break;
 		case On:
-			if (counter >= 26) { state = Wait; }
+			if (counter >= 18) { state = Wait; }
 			else { state = On; }
 			break;
 		case Wait:
