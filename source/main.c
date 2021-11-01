@@ -89,7 +89,7 @@ void Tick() {
 			set_PWM(0);
 			break;
 		case Init:
-			for(unsigned char k = 0; k < 26; ++k) {
+			for(unsigned char k = 0; k < 18; ++k) {
 				tempCount[k] = beatCount[k];
 			}
 			if ((~PINA & 0x01) == 0x01) { state = On; }
