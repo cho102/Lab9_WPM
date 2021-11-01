@@ -115,7 +115,7 @@ void Tick() {
 					++j;
 				}
 			}
-			else { set_PWM(0); ++j; }
+			else {set_PWM(0); ++j; }
 			break;
 		case Wait:
 			set_PWM(0);
