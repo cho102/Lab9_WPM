@@ -120,8 +120,10 @@ void Tick() {
 			break;
 		case Wait:
 			if ((~PINA & 0x07) == 0x00) {
-				if (power) { state = On; }
-				else { state = Init; }
+				//if (power) { 
+					state = On; 
+				//}
+				//else { state = Init; }
 			}
 			else { state = Wait; }
 			break;
@@ -161,9 +163,7 @@ void Tick() {
 			else if (counter == 493.88) { 
 				counter = 523.25; 
 			}
-			if (power) { 
-				set_PWM(counter);
-			}
+			set_PWM(counter);
 			break;
 		case Decrement:
 			if (counter == 523.25) { 
@@ -187,9 +187,7 @@ void Tick() {
 			else if (counter == 293.66) { 
 				counter = 261.63; 
 			}
-			if (power) { 
-				set_PWM(counter); 
-			}
+			set_PWM(counter); 
 			break;
 		case Wait:
 			break;
