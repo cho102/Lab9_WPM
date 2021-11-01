@@ -1,9 +1,9 @@
 /*	Author: lab
  *  Partner(s) Name: Cindy Ho
  *	Lab Section:
- *	Assignment: Lab #9  Exercise #2
+ *	Assignment: Lab #9  Exercise #3
  *	Exercise Description: [optional - include for your own benefit]
- *
+ *	Demo Link: 
  *	I acknowledge all content contained herein, excluding template or example
  *	code, is my own original work.
  */
@@ -78,9 +78,8 @@ enum States{Start, Init, On, Wait}state;
 double seq[18] = {261.63,261.63, 293.66, 329.63, 329.63, 293.66, 261.63, 261.63, 329.63, 329.63, 261.63, 261.63, 293.66, 261.63, 329.63, 293.66, 293.66, 261.63};
 char beatCount[18] = {2, 2, 4, 2, 2, 4, 2, 2, 2, 2, 2, 2, 4, 2, 2, 4, 4, 2};
 int tempCount[18] = {2, 2, 4, 2, 2, 4, 2, 2, 2, 2, 2, 2, 4, 2, 2, 4, 4, 2};
-//{3, 3, 6, 3, 3, 6, 3, 3, 3, 3, 3, 3, 6, 3, 3, 6, 6, 3};
 unsigned char counter = 0;
-unsigned char j;
+unsigned char temp;
 
 void Tick() {
 	switch(state) {
@@ -89,37 +88,52 @@ void Tick() {
 			set_PWM(0);
 			break;
 		case Init:
-			for(unsigned char k = 0; k < 18; ++k) {
-				tempCount[k] = beatCount[k];
+			for(int i = 0; i < 18; ++i) {
+				tempCount[i] = beatCount[i];
 			}
-			if ((~PINA & 0x01) == 0x01) { state = On; }
-			else { state = Init; }
+			if ((~PINA & 0x01) == 0x01) { 
+				state = On; 
+			}
+			else { 
+				state = Init; 
+			}
 			break;
 		case On:
-			if (counter >= 18) { state = Wait; }
-			else { state = On; }
+			if (counter >= 18) { 
+				state = Wait; 
+			}
+			else { 
+				state = On; 
+			}
 			break;
 		case Wait:
-			if ((~PINA & 0x01) == 0x00) { state = Init; }
-			else { state = Wait; }
+			if ((~PINA & 0x01) == 0x00) { 
+				state = Init; 
+			}
+			else { 
+				state = Wait; 
+			}
 	}
 	switch(state) {
 		case Start:
 			break;
 		case Init:
 			counter = 0;
-			j = 0;
+			temp = 0;
 			break;
 		case On:
-			if (j % 2 == 0) {
+			if (temp % 2 == 0) {
 				--tempCount[counter];
 				set_PWM(seq[counter]);
 				if(tempCount[counter] == 0) {
-					++j;
+					++temp;
 					++counter;
 				}
 			}
-			else { set_PWM(0); ++j; }
+			else { 
+				set_PWM(0); 
+				++temp; 
+			}
 			break;
 		case Wait:
 			set_PWM(0);
