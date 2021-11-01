@@ -10,7 +10,34 @@
 #include <avr/io.h>
 #ifdef _SIMULATE_
 #include "simAVRHeader.h"
+#include <avr/interrupt.h>
+
 #endif
+
+void set_PWM(double frequency) {
+	static double current_frequency;
+	if (frequency != current_frequency) {
+		if (!frequency) { TCCR3B &= 0x08; }
+		else { TCCR3B |= 0x03; }
+		if (frequency < 0.954) { OCR3A = 0xFFFF; }
+		else if (frequency > 31250) { OCR3A = 0x0000; }
+		else { OCR3A = (short)(8000000 / (128 * frequency)) - 1; }
+		TCNT3 = 0;
+		current_frequency = frequency;
+	}
+}
+
+void PWM_on() {
+	TCCR3A = (1 << COM3A0);
+	TCCR3B = (1 << WGM32) | (1 << CS31) | (1 << CS30);
+	set_PWM(0);
+}
+
+void PWM_off() {
+	TCCR3A = 0x00;
+	TCCR3B = 0x00;
+}
+
 
 volatile unsigned char TimerFlag = 0;
 
@@ -47,213 +74,102 @@ void TimerSet(unsigned long M) {
 	_avr_timer_cntcurr = _avr_timer_M;
 }
 
-void set_PWM(double frequency) {
-	static double current_frequency;
-	if (frequency != current_frequency) {
-		if (!frequency) { TCCR3B &= 0x08; }
-		else { TCCR3B |= 0x03; }
-		if (frequency < 0.954) { OCR3A = 0xFFFF; }
-		else if (frequency > 31250) { OCR3A = 0x0000; }
-		else { OCR3A = (short)(8000000 / (128 * frequency)) - 1; }
-		TCNT3 = 0;
-		current_frequency = frequency;
-	}
-}
+enum States{Start, Init, On, Increment, Decrement, Play}state;
 
-void PWM_on() {
-	TCCR3A = (1 << COM3A0);
-	TCCR3B = (1 << WGM32) | (1 << CS31) | (1 << CS30);
-	set_PWM(0);
-}
-
-void PWM_off() {
-	TCCR3A = 0x00;
-	TCCR3B = 0x00;
-}
-
-/*enum States{Start, Init, Power, Increment, Decrement, Play}state;
-unsigned char counter = 0;
+double counter = 0;
 unsigned char power = 0;
+
 void Tick() {
 	switch(state) {
 		case Start:
 			state = Init;
+			set_PWM(0);
 			break;
-		case Init :
-			if ((~PINA & 0x07) == 0x01) { 
-				state = Power; 
+		case Init:
+			if ((~PINA & 0x07) == 0x01) 
+			{ 
+				state = On; 
 			}
-			else if (((~PINA & 0x07) == 0x02) && power == 1) { 
+			else { 
+				state = Init; 
+			}
+			break;
+		case On:
+ 			if ((~PINA & 0x07) == 0x01) { 
+				state = Init; 
+			}
+			else if ((~PINA & 0x07) == 0x02) { 
 				state = Increment; 
 			}
-			else if (((~PINA & 0x07) == 0x04) && power == 1) { 
+			else if ((~PINA & 0x07) == 0x04) { 
 				state = Decrement; 
 			}
-			else { 
-				state = Init; 
-			}
-			break;
-		case Power:
- 			if ((~PINA & 0x07) == 0x01) { 
-				state = Power; 
-			}
-			else { 
-				state = Init; 
-			}
+			else { state = On; }
 			break;
 		case Increment:
-			if (counter < 8) {
-				++counter;
-			}
+			//if (counter < 8) {
+			//	++counter;
+			//}
 			state = Play;
 			break;
 		case Decrement:
-			if (counter > 1 ) {	
-				++counter;
-			}
+			//if (counter > 1) {
+			//	++counter;
+			//}
 			state = Play;
 			break;
 		case Play:
-			break;
-		default:
+			if ((~PINA & 0x07) == 0x00) {
+				if (power) { state = On; }
+				else { state = Init; }
+			}
+			else { state = Play; }
 			break;
 	}
 	switch(state) {
 		case Start:
 			break;
 		case Init:
+			power = 0;
 			set_PWM(0);
+			counter = 261.63;
 			break;
-		case Power:
-			if (power == 0) {
-				power = 1;
-			}
-			else {
-				power = 0;
-			}
-			
+		case On:
+			power = 1;
+	//		counter = 1;
+			set_PWM(counter);
 			break;
 		case Increment:
+			if (counter == 261.63) { counter = 293.66; }
+			else if (counter == 293.66) { counter = 329.63; }
+			else if (counter == 329.63) { counter = 349.23; }
+			else if (counter == 349.23) { counter = 392.00; }
+			else if (counter == 392.00) { counter = 440.00; }
+			else if (counter == 440.00) { counter = 493.88; }
+			else if (counter == 493.88) { counter = 523.25; }
+			if (power) { set_PWM(counter); }
 			break;
 		case Decrement:
+			if (counter == 523.25) { counter = 493.88; }
+			else if (counter == 493.88) { counter = 440.00; }
+			else if (counter == 440.00) { counter = 392.00; }
+			else if (counter == 392.00) { counter = 349.23; }
+			else if (counter == 349.23) { counter = 329.63; }
+			else if (counter == 329.63) { counter = 293.66; }
+			else if (counter == 293.66) { counter = 261.63; }
+			if (power) { set_PWM(counter); }
 			break;
-		case Play: 
-			if (power == 1) {
-				if (counter == 1) {
-					set_PWM(261.63);
-				} 
-				else if (counter == 2) {	
-					set_PWM(293.66);
-				}
-				else if (counter == 3) {
-					set_PWM(329.63);
-				}
-				else if (counter == 4) {	
-					set_PWM(349.23);
-				}
-				else if (counter == 5) {
-					set_PWM(392.00);
-				}
-				else if (counter == 6) {	
-					set_PWM(440.00);
-				}
-				else if (counter == 7) {
-					set_PWM(493.88);
-				}
-				else if (counter == 8) {
-					set_PWM(523.25);
-				}
-			}
-			break;
-		default:
-			break;
-	}
-}*/
-
-enum States{Start, Off, On, Up, Down, WaitRelease}state;
-
-double currPWM = 0;
-unsigned char OnFlag = 0;
-
-void Tick() {
-	switch(state) {
-		case Start:
-			state = Off;
-			set_PWM(0);
-			currPWM = 0;
-			break;
-		case Off:
-			if ((~PINA & 0x07) == 0x02) { state = On; }
-			else if ((~PINA & 0x07) == 0x01) { state = Up; }
-			else if ((~PINA & 0x07) == 0x04) { state = Down; }
-			else { state = Off; }
-			break;
-		case On:
- 			if ((~PINA & 0x07) == 0x02) { state = Off; }
-			else if ((~PINA & 0x07) == 0x01) { state = Up; }
-			else if ((~PINA & 0x07) == 0x04) { state = Down; }
-			else { state = On; }
-			break;
-		case Up:
-			state = WaitRelease;
-			break;
-		case Down:
-			state = WaitRelease;
-			break;
-		case WaitRelease:
-			if ((~PINA & 0x07) == 0x00) {
-				if (OnFlag) { state = On; }
-				else { state = Off; }
-			}
-			else { state = WaitRelease; }
-			break;
-	}
-	switch(state) {
-		case Start:
-			break;
-		case Off:
-			OnFlag = 0;
-			set_PWM(0);
-			break;
-		case On:
-			OnFlag = 1;
-			if (currPWM == 0) { set_PWM(261.63); currPWM = 261.63; }
-			else { set_PWM(currPWM); }
-			break;
-		case Up:
-			if (currPWM == 261.63) { currPWM = 293.66; }
-			else if (currPWM == 293.66) { currPWM = 329.63; }
-			else if (currPWM == 329.63) { currPWM = 349.23; }
-			else if (currPWM == 349.23) { currPWM = 392.00; }
-			else if (currPWM == 392.00) { currPWM = 440.00; }
-			else if (currPWM == 440.00) { currPWM = 493.88; }
-			else if (currPWM == 493.88) { currPWM = 523.25; }
-			if (OnFlag) { set_PWM(currPWM); }
-			break;
-		case Down:
-			if (currPWM == 523.25) { currPWM = 493.88; }
-			else if (currPWM == 493.88) { currPWM = 440.00; }
-			else if (currPWM == 440.00) { currPWM = 392.00; }
-			else if (currPWM == 392.00) { currPWM = 349.23; }
-			else if (currPWM == 349.23) { currPWM = 329.63; }
-			else if (currPWM == 329.63) { currPWM = 293.66; }
-			else if (currPWM == 293.66) { currPWM = 261.63; }
-			if (OnFlag) { set_PWM(currPWM); }
-			break;
-		case WaitRelease:
+		case Play:
 			break;
 	}
 }
 
 int main(void) {
-	/* Insert DDR and PORT initializations */
 	DDRA = 0x00; PORTA = 0xFF;
 	DDRB = 0xFF; PORTB = 0x00;
-
-	/* Insert your solution below */
 	state = Start;
 	PWM_on();
-	TimerSet(200);
+	TimerSet(50);
 	TimerOn();
 	while (1) {
 		Tick();
@@ -262,3 +178,4 @@ int main(void) {
 	}
 	return 1;
 }
+

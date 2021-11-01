@@ -120,7 +120,8 @@ void Tick() {
 			break;
 		case Play:
 			if ((~PINA & 0x07) == 0x00) {
-				state = Init;
+				if (power) { state = On; }
+				else { state = Init; }
 			}
 			else { state = Play; }
 			break;
@@ -131,12 +132,12 @@ void Tick() {
 		case Init:
 			power = 0;
 			set_PWM(0);
-			counter = 0;
+			counter = 261.63;
 			break;
 		case On:
 			power = 1;
-			counter = 1;
-			set_PWM(261.63);
+	//		counter = 1;
+			set_PWM(counter);
 			break;
 		case Increment:
 			if (counter == 261.63) { counter = 293.66; }
