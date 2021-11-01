@@ -74,56 +74,50 @@ void TimerSet(unsigned long M) {
 	_avr_timer_cntcurr = _avr_timer_M;
 }
 
-enum States{Start, Off, On, WaitRelease}state;
-double songArr[18] = {261.63,261.63, 293.66, 329.63, 329.63, 293.66, 261.63, 261.63, 329.63, 329.63, 261.63, 261.63, 293.66, 261.63, 329.63, 293.66, 293.66, 261.63};
+enum States{Start, Init, On, Wait}state;
+double seq[18] = {261.63,261.63, 293.66, 329.63, 329.63, 293.66, 261.63, 261.63, 329.63, 329.63, 261.63, 261.63, 293.66, 261.63, 329.63, 293.66, 293.66, 261.63};
 char beatCount[18] = {3, 3, 6, 3, 3, 6, 3, 3, 3, 3, 3, 3, 6, 3, 3, 6, 6, 3};
-int tempCount[18];
-double counter = 0;
-unsigned char power = 0;
-
-unsigned char i = 0;
-unsigned char j = 0;
+int tempCount[18] = = {3, 3, 6, 3, 3, 6, 3, 3, 3, 3, 3, 3, 6, 3, 3, 6, 6, 3};
+unsigned char counter = 0;
+unsigned char j;
 
 void Tick() {
 	switch(state) {
 		case Start:
-			state = Off;
-			set_PWM(0);
+			state = Init;
 			break;
-		case Off:
-			for(unsigned char k = 0; k < 26; ++k) {
-				tempCount[k] = beatCount[k];
-			}
+		case Init:
 			if ((~PINA & 0x01) == 0x01) { state = On; }
-			else { state = Off; }
+			else { state = Init; }
 			break;
 		case On:
-			if (i >= 26) { state = WaitRelease; }
+			if (counter >= 26) { state = Wait; }
 			else { state = On; }
 			break;
-		case WaitRelease:
-			if ((~PINA & 0x01) == 0x00) { state = Off; }
-			else { state = WaitRelease; }
+		case Wait:
+			if ((~PINA & 0x01) == 0x00) { state = Init; }
+			else { state = Wait; }
 	}
 	switch(state) {
 		case Start:
+			set_PWM(0);
 			break;
-		case Off:
-			i = 0;
+		case Init:
+			counter = 0;
 			j = 0;
 			break;
 		case On:
 			if (j % 2 == 0) {
-				--tempCount[i];
-				set_PWM(songArr[i]);
-				if(tempCount[i] == 0) {
-					++j;
+				--tempCount[counter];
+				set_PWM(seq[counter]);
+				if(tempCount[counter] == 0) {
+					++counter;
 					++i;
 				}
 			}
 			else { set_PWM(0); ++j; }
 			break;
-		case WaitRelease:
+		case Wait:
 			set_PWM(0);
 			break;
 	}
